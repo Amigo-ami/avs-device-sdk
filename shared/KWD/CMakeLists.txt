@@ -4,6 +4,14 @@ add_subdirectory("acsdkKWD")
 add_subdirectory("acsdkKWDImplementations")
 add_subdirectory("acsdkKWDInterfaces")
 
+if(KITTAI_KEY_WORD_DETECTOR)
+    add_subdirectory("KittAi")
+endif()
+
+if(SENSORY_KEY_WORD_DETECTOR)
+    add_subdirectory("Sensory")
+endif()
+
 if(KWD)
     add_subdirectory("acsdkKWDProvider")
 endif()

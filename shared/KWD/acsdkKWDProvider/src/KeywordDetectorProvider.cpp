@@ -15,7 +15,28 @@
 
 #include <AVSCommon/Utils/Logger/Logger.h>
 
+
+#ifdef KWD_KITTAI
+#include <KittAi/KittAiKeyWordDetector.h>
+#elif KWD_SENSORY
+#include <Sensory/SensoryKeywordDetector.h>
+#endif
+
 #include "KWDProvider/KeywordDetectorProvider.h"
+
+
+#ifdef KWD_KITTAI 
+/// The sensitivity of the Kitt.ai engine.
+static const double KITT_AI_SENSITIVITY = 0.6;
+
+/// The audio amplifier level of the Kitt.ai engine.
+static const float KITT_AI_AUDIO_GAIN = 2.0;
+static const bool KITT_AI_APPLY_FRONT_END_PROCESSING = true;
+#endif
+
+#if defined(KWD_KITTAI) || defined(KWD_SENSORY)
+const std::string& pathToInputFolder = INPUT_MODEFILE;
+#endif 
 
 using namespace alexaClientSDK;
 using namespace alexaClientSDK::kwd;
@@ -30,7 +51,7 @@ using namespace alexaClientSDK::kwd;
  */
 #define LX(event) alexaClientSDK::avsCommon::utils::logger::LogEntry(TAG, event)
 
-KeywordDetectorProvider::KWDCreateMethod m_kwdCreateFunction;
+KeywordDetectorProvider::KWDCreateMethod m_kwdCreateFunction;  
 
 KeywordDetectorProvider::KWDRegistration::KWDRegistration(KWDCreateMethod createFunction) {
     if (m_kwdCreateFunction) {
@@ -45,11 +66,45 @@ std::unique_ptr<acsdkKWDImplementations::AbstractKeywordDetector> KeywordDetecto
     avsCommon::utils::AudioFormat audioFormat,
     std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordObserverInterface>> keyWordObservers,
     std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>
-        keyWordDetectorStateObservers) {
-    if (m_kwdCreateFunction) {
-        return m_kwdCreateFunction(stream, audioFormat, keyWordObservers, keyWordDetectorStateObservers);
-    } else {
-        ACSDK_ERROR(LX(__func__).m("KeywordDetector create not found"));
-        return nullptr;
+        keyWordDetectorStateObservers ) {
+        	        	
+#if defined(KWD_KITTAI) 
+
+    std::cout << "Path to input folder: " << pathToInputFolder << std::endl;
+    if(pathToInputFolder.empty()){
+    		ACSDK_ERROR(LX(__func__).m("KeywordDetector create not found"));
+    		return nullptr;
+    }      
+    return alexaClientSDK::acsdkKWDImplementations::KittAiKeyWordDetector::create(
+        stream,
+        audioFormat,
+        keyWordObservers,
+        keyWordDetectorStateObservers,
+        pathToInputFolder + "/common.res",
+        {{pathToInputFolder + "/alexa.umdl", "ALEXA", KITT_AI_SENSITIVITY}},
+        KITT_AI_AUDIO_GAIN,
+        KITT_AI_APPLY_FRONT_END_PROCESSING); 
+            
+#elif defined(KWD_SENSORY)
+    if(!pathToInputFolder.empty()){
+    		ACSDK_ERROR(LX(__func__).m("KeywordDetector create not found"));
+    		return nullptr;
     }
+    return kwd::SensoryKeywordDetector::create(
+    stream,
+    audioFormat,
+    keyWordObservers,
+    keyWordDetectorStateObservers,
+    pathToInputFolder + "/spot-alexa-rpi-31000.snsr");   
+#else
+    if (m_kwdCreateFunction) {
+    return m_kwdCreateFunction(stream, audioFormat, keyWordObservers, keyWordDetectorStateObservers);
+    } 
+    else {
+      ACSDK_ERROR(LX(__func__).m("KeywordDetector create not found"));
+      return nullptr;
+    }
+   
+#endif
+
 }

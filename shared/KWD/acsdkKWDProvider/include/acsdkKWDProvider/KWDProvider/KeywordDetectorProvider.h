@@ -52,7 +52,8 @@ public:
         avsCommon::utils::AudioFormat audioFormat,
         std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordObserverInterface>> keyWordObservers,
         std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>
-            keyWordDetectorStateObservers);
+            keyWordDetectorStateObservers );
+        //const std::string& pathToInputFolder );
 
     // Signature of functions to create an AbstractKeywordDetector.
     using KWDCreateMethod = std::unique_ptr<acsdkKWDImplementations::AbstractKeywordDetector> (*)(

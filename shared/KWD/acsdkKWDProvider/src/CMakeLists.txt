@@ -5,7 +5,17 @@ add_library(KeywordDetectorProvider
 target_include_directories(KeywordDetectorProvider PUBLIC
     "${KeywordDetectorProvider_SOURCE_DIR}/include/acsdkKWDProvider")
 
-target_link_libraries(KeywordDetectorProvider AVSCommon acsdkKWDImplementations)
+target_link_libraries(KeywordDetectorProvider AVSCommon )
+
+if(KITTAI_KEY_WORD_DETECTOR)
+		if(TARGET KITTAI)
+    	set(TARGET_KWD_LIB KITTAI)
+    endif()
+elseif(SENSORY_KEY_WORD_DETECTOR)
+		if(TARGET SENSORY)
+    	set(TARGET_KWD_LIB SENSORY)
+    endif()
+endif()
 
 if(TARGET_KWD_LIB)
     target_link_libraries(KeywordDetectorProvider ${TARGET_KWD_LIB})

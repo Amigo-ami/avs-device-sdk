@@ -1,0 +1,7 @@
+// config.h.in
+#ifndef _FILE_CONFIG_H_
+#define _FILE_CONFIG_H_
+
+#define PATHTOINPUTSFOLDER "@PATHTOINPUTSFOLDER@"
+
+#endif // CONFIG_H
